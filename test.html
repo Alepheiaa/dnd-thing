@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>run</title><style>body{background:#000;color:#fff;font:14px monospace;margin:0;padding:8px;white-space:pre-wrap}</style></head>
+<body>
+<div id="out">running</div>
+<script type="module">
+const f = []
+const M = n => `################# MALFUNCTION ${n} #################`
+addEventListener("unhandledrejection", e => out.textContent = M(10) + '\n' + e.reason)
+addEventListener("error", e => out.textContent = M(11) + '\n' + e.message)
+const ok = (c, msg) => { if (!c) f.push(msg) }
+
+localStorage.removeItem('dm-init')
+const fr = document.createElement('iframe')
+const load = () => new Promise(r => { fr.onload = r; fr.src = 'index.html?' + Date.now() })
+document.body.append(fr)
+await load()
+
+let w, d
+const bind = () => { w = fr.contentWindow; d = w.document }
+bind()
+const $ = id => d.getElementById(id)
+const rows = () => [...w.m.shadowRoot.querySelectorAll('.r .t')].map(x => x.textContent)
+const mark = () => [...w.m.shadowRoot.querySelectorAll('.r')].findIndex(r => r.querySelector('svg'))
+const tots = () => rows().map(t => parseInt(t))
+const db = () => JSON.parse(w.localStorage.getItem('dm-init'))
+const set = (id, v) => { $(id).value = v; $(id).dispatchEvent(new w.Event('input', {bubbles: true})) }
+const pick = j => {
+  w.m.index = j
+  w.m.shadowRoot.querySelector('.l').dispatchEvent(new w.KeyboardEvent('keydown', {key: 'Enter', bubbles: true, cancelable: true}))
+}
+const addOne = (n, mod, h = '', a = '', q = 1) => {
+  set('an', n); set('am', mod); set('ah', h); set('aa', a); set('aq', q)
+  $('ad').requestSubmit()
+}
+
+ok(rows()[0] === 'No combatants yet', 'empty state row')
+pick(0)
+ok($('ed').hidden && d.activeElement === $('an'), 'picking the empty row focuses Add')
+
+addOne('Goblin', 2, '2d6', 15, 3)
+addOne('Ogre', -1, '59', 11)
+addOne('Vex', 5)
+ok(rows().length === 5, `row count: ${rows().length}`)
+ok(rows().some(t => t.includes('Goblin 3 (+2)')), 'numbered copies with mod')
+ok(rows().some(t => t.includes('Ogre (-1) · 59/59 HP · AC 11')), `negative mod, HP, AC: ${rows()}`)
+ok(rows().some(t => /Vex \(\+5\)$/.test(t)), 'blank HP/AC stay off the label')
+const gob = db().c.filter(x => x.n.startsWith('Goblin'))
+ok(gob.every(x => x.h >= 2 && x.h <= 12 && x.a === 15), `dice HP rolled per copy: ${gob.map(x => x.h)}`)
+ok(db().c.every(x => x.r >= 1 && x.r <= 20), 'initiative is a d20')
+ok(db().c.every(x => rows().some(t => t.startsWith(`${x.r + x.m}: ${x.n} `))), 'total = d20 + mod')
+
+ok(tots().every((v, j, a) => !j || a[j - 1] >= v), `sorted desc: ${tots()}`)
+
+const s = db()
+s.c.forEach(x => { x.r = 10 - x.m })
+w.localStorage.setItem('dm-init', JSON.stringify(s))
+await load(); bind()
+ok(rows().length === 5, 'reload keeps roster')
+ok(tots().every(v => v === 10), `forced tie: ${tots()}`)
+ok(rows()[0].includes('Vex') && rows()[4].includes('Ogre'), `tie goes to higher mod: ${rows()}`)
+$('ra').click()
+
+ok([...$('dl').options].map(o => o.value).includes('Goblin'), 'name remembered in datalist')
+set('an', 'Goblin')
+ok($('am').value === '2' && $('ah').value === '2d6' && $('aa').value === '15', 'known name fills mod/HP/AC')
+set('an', ''); set('am', 0); set('ah', ''); set('aa', '')
+
+const nx = $('nx')
+$('nw').click()
+nx.click()
+ok(mark() === 0, 'first Next marks the top')
+for (let j = 0; j < 4; j++) nx.click()
+ok(db().o === 1 && mark() === 4, 'still round 1 on the last combatant')
+const r1 = JSON.stringify(db().c.map(x => x.r))
+nx.click()
+ok(db().o === 2 && mark() === 0, `wraps to round 2 at the top: ${db().o}`)
+let changed = JSON.stringify(db().c.map(x => x.r)) !== r1
+for (let j = 0; j < 5 && !changed; j++) {
+  const b = JSON.stringify(db().c.map(x => x.r))
+  for (let q = 0; q < 5; q++) nx.click()
+  changed = JSON.stringify(db().c.map(x => x.r)) !== b
+}
+ok(changed, 'auto reroll on new round')
+
+$('au').click()
+const o = db().o
+const r2 = JSON.stringify(db().c.map(x => x.r))
+for (let j = 0; j < 5; j++) nx.click()
+ok(db().o === o + 1 && JSON.stringify(db().c.map(x => x.r)) === r2, 'no reroll when unticked')
+$('au').click()
+ok(db().a === true, 'reroll-each-round setting saved')
+
+const r3 = JSON.stringify(db().c.map(x => x.r))
+let moved = false
+for (let j = 0; j < 5 && !moved; j++) { $('ra').click(); moved = JSON.stringify(db().c.map(x => x.r)) !== r3 }
+ok(moved && mark() === 0, 'reroll all rerolls and marks the top')
+
+pick(rows().findIndex(t => t.includes('Goblin 1')))
+ok(!$('ed').hidden && $('ad').hidden, 'pick opens editor and hides Add')
+set('er', 20)
+set('em', 9)
+ok(tots()[0] === 29, `edited roll floats to top: ${tots()[0]}`)
+set('en', 'Boss')
+ok(rows()[0].includes('Boss (+9)'), 'rename')
+
+let rr = false
+for (let j = 0; j < 5 && !rr; j++) { $('rr').click(); rr = +$('er').value !== 20 }
+ok(rr && tots().includes(+$('er').value + 9), 'reroll one')
+
+pick(rows().findIndex(t => t.includes('Ogre')))
+set('ez', 10); $('dmg').click()
+ok(rows().some(t => t.includes('Ogre (-1) · 49/59 HP')), `damage: ${rows()}`)
+ok($('eh').value === '49' && $('ez').value === '', 'editor refreshes after damage')
+set('ez', 100); $('dmg').click()
+ok(db().c.find(x => x.n === 'Ogre').h === 0, 'damage floors at 0')
+set('ez', 5); $('heal').click()
+set('ez', 500); $('heal').click()
+ok(db().c.find(x => x.n === 'Ogre').h === 59, 'heal caps at max')
+set('eh', 70)
+ok(rows().some(t => t.includes('70/70 HP')), 'editing HP above max raises max')
+set('ea', 13)
+ok(rows().some(t => t.includes('AC 13')), 'edit AC')
+
+$('et').click()
+ok(rows()[mark()].includes('Ogre'), 'their turn moves the marker')
+
+pick(rows().findIndex(t => t.includes('Ogre')))
+$('ex').click()
+ok(rows().length === 4 && !rows().some(t => t.includes('Ogre')), 'remove')
+ok($('ed').hidden && !$('ad').hidden, 'closing the editor brings Add back')
+ok($('am').value === '0', 'mod resets after add')
+ok(mark() >= 0, 'removing the current combatant passes the turn on')
+
+{
+  addOne('Hi', 50)
+  addOne('Lo', -50)
+  const n = rows().length, r = db().o
+  pick(n - 1); $('et').click()
+  ok(rows()[mark()].includes('Lo'), 'Lo is last')
+  pick(n - 1); $('ex').click()
+  ok(db().o === r + 1 && mark() === 0, `remove last-in-order current bumps round: ${db().o} ${mark()}`)
+  pick(0); $('et').click()
+  ok(rows()[mark()].includes('Hi'), 'Hi is first')
+  const second = rows()[1].split(': ')[1].split(' (')[0]
+  pick(0); $('ex').click()
+  ok(db().o === r + 1 && rows()[mark()].includes(second), 'remove first-in-order current passes to the next')
+}
+
+d.querySelectorAll('details').forEach(x => x.open = true)
+set('sn', 'Ambush'); $('en2').requestSubmit()
+ok(db().enc.Ambush?.length === 4, `encounter saved: ${db().enc.Ambush?.length}`)
+ok(db().enc.Ambush.some(x => x.h === '2d6'), 'encounter keeps HP dice')
+ok($('sl').value === 'Ambush', 'saved encounter selected')
+ok(!$('sl').parentElement.hidden, 'encounter picker shows once saved')
+$('ld').click()
+ok(rows().length === 8, 'add to fight appends')
+{
+  const names = db().c.map(x => x.n)
+  ok(new Set(names).size === names.length, `no duplicate names after loading: ${names}`)
+}
+$('dl2').click()
+ok(!db().enc.Ambush && $('sl').options.length === 0, 'delete encounter')
+ok($('sl').parentElement.hidden, 'empty encounter picker hides')
+
+const dice = [...$('dz').children]
+ok(dice.map(b => b.textContent).join() === 'd4,d6,d8,d10,d12,d20,d100', 'dice tray buttons')
+const seen = new Set()
+for (let j = 0; j < 200; j++) { dice[0].click(); seen.add(+$('dr').textContent.split('→ ')[1]) }
+ok([...seen].sort().join() === '1,2,3,4', `d4 hits exactly 1-4: ${[...seen]}`)
+
+$('nw').click()
+ok($('rd').textContent === 'Round 1' && mark() === -1, 'new combat resets round and marker')
+
+const before = JSON.stringify(rows())
+await load(); bind()
+ok(JSON.stringify(rows()) === before, 'survives reload')
+
+$('cl').click()
+ok(rows().length === 8, 'first clear click only arms')
+$('cl').click()
+ok(rows()[0] === 'No combatants yet', 'second click clears')
+ok(db().lib.Goblin, 'clear keeps the monster library')
+nx.click()
+ok(mark() === -1, 'next on empty roster is a no-op')
+
+addOne('Wolf', 1)
+addOne('Wolf', 1)
+addOne('Wolf', 1, '', '', 2)
+{
+  const w = db().c.filter(x => x.n.startsWith('Wolf')).map(x => x.n)
+  ok(w.length === 4 && new Set(w).size === 4, `dupes numbered: ${w}`)
+}
+
+const hp = w.eval('hp')
+ok(hp('7') === 7 && hp('') === null && hp('abc') === null && hp('d1') === 1 && hp('1d1+4') === 5 && hp('1d1-9') === 1 && hp(' 2 d1 ') === 2, 'hp parser')
+
+addOne('<img src=x>', 0)
+ok(!w.m.shadowRoot.querySelector('.r img'), 'names are escaped')
+
+w.localStorage.setItem('dm-init', '{not json')
+await load(); bind()
+ok(rows()[0] === 'No combatants yet', 'bad storage falls back to empty')
+w.localStorage.setItem('dm-init', '{"c":5,"lib":null}')
+await load(); bind()
+ok(rows()[0] === 'No combatants yet', 'non-array roster falls back to empty')
+
+localStorage.removeItem('dm-init')
+out.textContent = f.length ? M(12) + '\n' + f.join(' | ') : 'PASS'
+</script>
+</body>
+</html>

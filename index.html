@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Initiative</title>
+<style>
+  html,body{height:100%}
+  body{
+    margin:0;
+    display:grid;
+    place-items:center;
+    background:#242424;
+    font:500 15px/1.2 "DejaVu Sans","Segoe UI",Inter,system-ui,sans-serif;
+    color:#efefef;
+  }
+  .s{display:grid;gap:22px;justify-items:center;padding:24px}
+  ethereal-menu{--card:#22202b;--text:#efefef;--icon:12px;--list:400px;--art:360px;--min-h:min(560px,82vh)}
+  .p{
+    align-self:stretch;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+    box-sizing:border-box;
+    padding:20px 18px;
+    overflow:auto;
+    border-radius:var(--art-radius,14px);
+    background:#1a1921;
+    scrollbar-width:thin;
+    scrollbar-color:rgba(255,255,255,.2) transparent;
+  }
+  .s>.p{width:min(92vw,392px)}
+  .h{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .h b{font-size:20px;font-weight:600;letter-spacing:.02em}
+  .p>.k:last-child{margin-top:auto}
+  .k{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+  form{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  form h3,summary{grid-column:1/-1;margin:0;font-size:15px;font-weight:600}
+  summary{cursor:pointer}
+  details[open] summary{margin-bottom:8px}
+  form[hidden],form>div[hidden]{display:none}
+  form>div{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px}
+  .w{grid-column:1/-1}
+  .f{flex:1}
+  label{display:grid;gap:4px;font-size:12px;opacity:.85}
+  label.x{display:flex;align-items:center;gap:6px;font-size:13px}
+  input[type=checkbox]{accent-color:#efefef}
+  input:not([type=checkbox]),select{
+    box-sizing:border-box;
+    width:100%;
+    min-width:0;
+    height:34px;
+    padding:0 10px;
+    border:0;
+    border-radius:6px;
+    background:rgba(255,255,255,.07);
+    color:inherit;
+    font:inherit;
+  }
+  select option{background:#1a1921}
+  button{
+    height:34px;
+    padding:0 14px;
+    border:0;
+    border-radius:6px;
+    background:rgba(255,255,255,.16);
+    color:inherit;
+    font:inherit;
+    cursor:pointer;
+  }
+  button:hover{background:rgba(255,255,255,.22)}
+  button.b{height:42px;padding:0 20px;background:#efefef;color:#22202b;font-weight:600}
+  button.q{background:none;opacity:.7}
+  button.q:hover{opacity:1;background:rgba(255,255,255,.07)}
+  .dz{display:flex;flex-wrap:wrap;gap:6px}
+  .dz button{padding:0 10px}
+  #dr{font-size:14px;min-height:17px;opacity:.85}
+  :focus-visible{outline:2px solid #efefef;outline-offset:2px}
+  @media (max-width:640px){.s{padding:16px 4vw}ethereal-menu{--min-h:0}}
+</style>
+<script src="ethereal-menu.js"></script>
+</head>
+<body>
+
+<div class="s" id="sc">
+  <ethereal-menu id="m">
+    <div class="p" id="p">
+      <div class="h"><b id="rd">Round 1</b><button class="b" id="nx">Next turn</button></div>
+      <div class="k">
+        <button id="ra">Reroll all</button>
+        <label class="x"><input type="checkbox" id="au"> Reroll each round</label>
+      </div>
+
+      <form id="ed" hidden>
+        <h3>Edit</h3>
+        <label class="w">Name<input id="en" autocomplete="off"></label>
+        <label>Mod<input id="em" type="number"></label>
+        <label>d20<input id="er" type="number"></label>
+        <label>HP<input id="eh" type="number"></label>
+        <label>AC<input id="ea" type="number"></label>
+        <div>
+          <input id="ez" type="number" min="0" placeholder="Amount" style="width:96px">
+          <button type="button" id="dmg">Damage</button>
+          <button type="button" id="heal">Heal</button>
+        </div>
+        <div>
+          <button type="button" id="rr">Reroll</button>
+          <button type="button" id="et">Their turn</button>
+          <button type="button" id="ex">Remove</button>
+          <button class="q">Done</button>
+        </div>
+      </form>
+
+      <form id="ad">
+        <h3>Add</h3>
+        <label class="w">Name<input id="an" autocomplete="off" placeholder="Goblin" list="dl"></label>
+        <label>Mod<input id="am" type="number" value="0"></label>
+        <label>HP<input id="ah" autocomplete="off" placeholder="2d6+1"></label>
+        <label>AC<input id="aa" type="number"></label>
+        <label>Count<input id="aq" type="number" value="1" min="1" max="20"></label>
+        <div><button>Add</button></div>
+        <datalist id="dl"></datalist>
+      </form>
+
+      <details>
+        <summary>Encounters</summary>
+        <form id="en2">
+          <div><input id="sn" class="f" autocomplete="off" placeholder="Save roster as…" aria-label="Encounter name"><button>Save</button></div>
+          <div><select id="sl" class="f" aria-label="Saved encounters"></select><button type="button" id="ld">Add to fight</button><button type="button" class="q" id="dl2">Delete</button></div>
+        </form>
+      </details>
+
+      <details>
+        <summary>Dice</summary>
+        <div class="dz" id="dz"></div>
+        <div id="dr"></div>
+      </details>
+
+      <div class="k"><button class="q" id="nw">New combat</button><button class="q" id="cl">Clear all</button></div>
+    </div>
+  </ethereal-menu>
+</div>
+
+<script>
+  const K = 'dm-init'
+  let db = {c: [], t: null, o: 1, a: true, i: 0, lib: {}, enc: {}}
+  try { Object.assign(db, JSON.parse(localStorage.getItem(K))) } catch {}
+  if (!Array.isArray(db.c)) db.c = []
+  db.lib ||= {}
+  db.enc ||= {}
+  let e = null
+
+  const die = s => 1 + Math.floor(Math.random() * s)
+  const roll = x => { x.r = die(20); x.k = Math.random() }
+  const tot = x => x.r + x.m
+  const sg = v => (v < 0 ? '' : '+') + v
+  const num = v => v === '' || v == null ? null : +v
+  const order = () => [...db.c].sort((a, b) => tot(b) - tot(a) || b.m - a.m || b.k - a.k)
+  const get = i => db.c.find(x => x.i === i)
+  const save = () => { try { localStorage.setItem(K, JSON.stringify(db)) } catch {} }
+
+  const hp = s => {
+    s = String(s ?? '').replace(/\s/g, '')
+    if (/^-?\d+$/.test(s)) return +s
+    const d = s.match(/^(\d*)d(\d+)([+-]\d+)?$/i)
+    if (!d) return null
+    let v = +(d[3] || 0)
+    for (let j = 0; j < (+d[1] || 1); j++) v += die(+d[2])
+    return Math.max(v, 1)
+  }
+
+  const label = x => [
+    `${tot(x)}: ${x.n} (${sg(x.m)})`,
+    x.h != null && `${x.h}${x.hm != null ? '/' + x.hm : ''} HP`,
+    x.a != null && `AC ${x.a}`
+  ].filter(Boolean).join(' · ')
+
+  const draw = () => {
+    const o = order()
+    m.entries = o.length
+      ? o.map(x => ({icon: x.i === db.t ? 'dot' : null, label: label(x)}))
+      : [{label: 'No combatants yet'}]
+    const j = o.findIndex(x => x.i === (e ?? db.t))
+    if (j >= 0) m.index = j
+    rd.textContent = `Round ${db.o}`
+    au.checked = db.a
+    dl.replaceChildren(...Object.keys(db.lib).map(n => new Option('', n)))
+    sl.replaceChildren(...Object.keys(db.enc).map(n => new Option(`${n} (${db.enc[n].length})`, n)))
+    sl.parentElement.hidden = !sl.options.length
+    save()
+  }
+
+  const fill = x => {
+    en.value = x.n
+    em.value = x.m
+    er.value = x.r
+    eh.value = x.h ?? ''
+    ea.value = x.a ?? ''
+  }
+
+  const close = () => { e = null; ed.hidden = true; ad.hidden = false }
+
+  const uniq = n => {
+    const has = v => db.c.some(x => x.n === v)
+    if (!has(n)) return n
+    const b = n.replace(/ \d+$/, '')
+    let k = 2
+    while (has(`${b} ${k}`)) k++
+    return `${b} ${k}`
+  }
+
+  const add = (n, mod, h, a) => {
+    const x = {i: ++db.i, n: uniq(n), m: mod, a, hd: String(h ?? '').trim()}
+    x.h = x.hm = hp(h)
+    roll(x)
+    db.c.push(x)
+  }
+
+  const next = () => {
+    let o = order()
+    if (!o.length) return
+    let j = o.findIndex(x => x.i === db.t) + 1
+    if (j >= o.length) {
+      db.o++
+      if (db.a) db.c.forEach(roll)
+      o = order()
+      j = 0
+    }
+    db.t = o[j].i
+  }
+
+  nx.onclick = () => { next(); close(); draw() }
+
+
+  ra.onclick = () => {
+    db.c.forEach(roll)
+    db.t = order()[0]?.i ?? null
+    draw()
+  }
+
+  au.onchange = () => { db.a = au.checked; save() }
+
+  an.oninput = () => {
+    const t = db.lib[an.value.trim()]
+    if (!t) return
+    am.value = t.m
+    ah.value = t.h
+    aa.value = t.a ?? ''
+  }
+
+  ad.onsubmit = k => {
+    k.preventDefault()
+    const n = an.value.trim() || 'Monster'
+    const c = Math.min(Math.max(+aq.value || 1, 1), 20)
+    const mod = +am.value || 0
+    const a = num(aa.value)
+    for (let j = 1; j <= c; j++) add(c > 1 ? `${n} ${j}` : n, mod, ah.value, a)
+    db.lib[n] = {m: mod, h: ah.value.trim(), a}
+    an.value = ''
+    am.value = 0
+    ah.value = ''
+    aa.value = ''
+    aq.value = 1
+    an.focus()
+    draw()
+  }
+
+  m.addEventListener('pick', k => {
+    k.preventDefault()
+    const x = order()[k.detail.index]
+    if (!x) return an.focus()
+    e = x.i
+    fill(x)
+    ed.hidden = false
+    ad.hidden = true
+    draw()
+  })
+
+  ed.oninput = k => {
+    const x = get(e)
+    if (!x || k.target === ez) return
+    x.n = en.value
+    x.m = +em.value || 0
+    x.r = +er.value || 0
+    x.h = num(eh.value)
+    if (x.h != null && (x.hm == null || x.h > x.hm)) x.hm = x.h
+    x.a = num(ea.value)
+    draw()
+  }
+
+  const hit = s => {
+    const x = get(e)
+    const v = Math.abs(+ez.value || 0)
+    if (!x || x.h == null || !v) return
+    x.h = Math.max(0, x.h + s * v)
+    if (x.hm != null) x.h = Math.min(x.h, x.hm)
+    ez.value = ''
+    fill(x)
+    draw()
+  }
+  dmg.onclick = () => hit(-1)
+  heal.onclick = () => hit(1)
+
+  rr.onclick = () => {
+    const x = get(e)
+    if (!x) return
+    roll(x)
+    fill(x)
+    draw()
+  }
+
+  ed.onsubmit = k => { k.preventDefault(); close(); draw() }
+
+  et.onclick = () => { db.t = e; close(); draw() }
+
+  ex.onclick = () => {
+    const o = order()
+    db.c = db.c.filter(x => x.i !== e)
+    if (db.t === e) {
+      db.t = o[o.findIndex(x => x.i === e) - 1]?.i ?? null
+      next()
+    }
+    close()
+    draw()
+  }
+
+  en2.onsubmit = k => {
+    k.preventDefault()
+    const n = sn.value.trim()
+    if (!n || !db.c.length) return sn.focus()
+    db.enc[n] = db.c.map(x => ({n: x.n, m: x.m, h: x.hd || (x.hm ?? ''), a: x.a}))
+    sn.value = ''
+    draw()
+    sl.value = n
+  }
+
+  ld.onclick = () => {
+    for (const x of db.enc[sl.value] ?? []) add(x.n, x.m, x.h, x.a)
+    draw()
+  }
+
+  dl2.onclick = () => {
+    delete db.enc[sl.value]
+    draw()
+  }
+
+  for (const s of [4, 6, 8, 10, 12, 20, 100]) {
+    const b = document.createElement('button')
+    b.textContent = 'd' + s
+    b.onclick = () => dr.textContent = `d${s} → ${die(s)}`
+    dz.append(b)
+  }
+
+  nw.onclick = () => {
+    db.o = 1
+    db.t = null
+    db.c.forEach(roll)
+    close()
+    draw()
+  }
+
+  let armed = 0
+  cl.onclick = () => {
+    if (Date.now() - armed > 2000) {
+      armed = Date.now()
+      cl.textContent = 'Click again to clear'
+      return setTimeout(() => cl.textContent = 'Clear all', 2000)
+    }
+    Object.assign(db, {c: [], t: null, o: 1})
+    armed = 0
+    cl.textContent = 'Clear all'
+    close()
+    draw()
+  }
+
+  const mq = matchMedia('(max-width:640px)')
+  const fit = () => mq.matches ? sc.insertBefore(p, m) : m.append(p)
+  mq.onchange = fit
+  fit()
+
+  draw()
+</script>
+
+</body>
+</html>
